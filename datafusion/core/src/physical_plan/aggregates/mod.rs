@@ -18,7 +18,6 @@
 //! Aggregates functionalities
 
 use crate::execution::context::TaskContext;
-use crate::physical_plan::aggregates::no_grouping::AggregateStream;
 use crate::physical_plan::metrics::{
     BaselineMetrics, ExecutionPlanMetricsSet, MetricsSet,
 };
@@ -50,12 +49,19 @@ use datafusion_physical_expr::aggregate::row_accumulator::RowAccumulator;
 use datafusion_physical_expr::equivalence::project_equivalence_properties;
 pub use datafusion_physical_expr::expressions::create_aggregate_expr;
 use datafusion_physical_expr::normalize_out_expr_with_alias_schema;
+pub use no_grouping::AggregateStream;
+
+use super::projection::get_field_metadata;
 
 /// Hash aggregate modes
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum AggregateMode {
     /// Partial aggregate that can be applied in parallel across input partitions
     Partial,
+    /// PartialMerge is used to merge aggregation buffers containing intermediate results for this function.
+    /// This function updates the given aggregation buffer by merging multiple aggregation buffers.
+    /// When it has processed all input rows, the aggregation buffer is returned.
+    PartialMerge,
     /// Final aggregate that produces a single partition of output
     Final,
     /// Final aggregate that works on pre-partitioned data.
@@ -360,7 +366,9 @@ impl ExecutionPlan for AggregateExec {
 
     fn required_input_distribution(&self) -> Vec<Distribution> {
         match &self.mode {
-            AggregateMode::Partial => vec![Distribution::UnspecifiedDistribution],
+            AggregateMode::Partial | AggregateMode::PartialMerge => {
+                vec![Distribution::UnspecifiedDistribution]
+            }
             AggregateMode::FinalPartitioned => {
                 vec![Distribution::HashPartitioned(self.output_group_expr())]
             }
@@ -502,7 +510,8 @@ impl ExecutionPlan for AggregateExec {
     }
 }
 
-fn create_schema(
+/// TODO
+pub fn create_schema(
     input_schema: &Schema,
     group_expr: &[(Arc<dyn PhysicalExpr>, String)],
     aggr_expr: &[Arc<dyn AggregateExpr>],
@@ -511,18 +520,22 @@ fn create_schema(
 ) -> datafusion_common::Result<Schema> {
     let mut fields = Vec::with_capacity(group_expr.len() + aggr_expr.len());
     for (expr, name) in group_expr {
-        fields.push(Field::new(
+        let mut field = Field::new(
             name,
             expr.data_type(input_schema)?,
             // In cases where we have multiple grouping sets, we will use NULL expressions in
             // order to align the grouping sets. So the field must be nullable even if the underlying
             // schema field is not.
             contains_null_expr || expr.nullable(input_schema)?,
-        ))
+        );
+        field.set_metadata(
+            get_field_metadata(expr, &input_schema).unwrap_or_default(),
+        );
+        fields.push(field)
     }
 
     match mode {
-        AggregateMode::Partial => {
+        AggregateMode::Partial | AggregateMode::PartialMerge => {
             // in partial mode, the fields of the accumulator's state
             for expr in aggr_expr {
                 fields.extend(expr.state_fields()?.iter().cloned())
@@ -536,7 +549,7 @@ fn create_schema(
         }
     }
 
-    Ok(Schema::new(fields))
+    Ok(Schema::new_with_metadata(fields, input_schema.metadata().clone()))
 }
 
 fn group_schema(schema: &Schema, group_count: usize) -> SchemaRef {
@@ -558,7 +571,9 @@ fn aggregate_expressions(
             Ok(aggr_expr.iter().map(|agg| agg.expressions()).collect())
         }
         // in this mode, we build the merge expressions of the aggregation
-        AggregateMode::Final | AggregateMode::FinalPartitioned => {
+        AggregateMode::Final
+        | AggregateMode::FinalPartitioned
+        | AggregateMode::PartialMerge => {
             let mut col_idx_base = col_idx_base;
             Ok(aggr_expr
                 .iter()
@@ -623,7 +638,7 @@ fn finalize_aggregation(
     mode: &AggregateMode,
 ) -> datafusion_common::Result<Vec<ArrayRef>> {
     match mode {
-        AggregateMode::Partial => {
+        AggregateMode::Partial | AggregateMode::PartialMerge => {
             // build the vector of states
             let a = accumulators
                 .iter()

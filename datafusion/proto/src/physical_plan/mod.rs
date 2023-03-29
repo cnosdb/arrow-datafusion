@@ -352,6 +352,7 @@ impl AsExecutionPlan for PhysicalPlanNode {
                     protobuf::AggregateMode::FinalPartitioned => {
                         AggregateMode::FinalPartitioned
                     }
+                    protobuf::AggregateMode::PartialMerge => AggregateMode::PartialMerge,
                 };
 
                 let num_expr = hash_agg.group_expr.len();
@@ -873,7 +874,9 @@ impl AsExecutionPlan for PhysicalPlanNode {
                 .collect::<Result<_, DataFusionError>>()?;
 
             let agg_mode = match exec.mode() {
-                AggregateMode::Partial => protobuf::AggregateMode::Partial,
+                AggregateMode::Partial | AggregateMode::PartialMerge => {
+                    protobuf::AggregateMode::Partial
+                }
                 AggregateMode::Final => protobuf::AggregateMode::Final,
                 AggregateMode::FinalPartitioned => {
                     protobuf::AggregateMode::FinalPartitioned

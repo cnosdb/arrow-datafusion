@@ -670,6 +670,7 @@ use crate::physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec;
 pub use datafusion_physical_expr::{
     expressions, functions, hash_utils, type_coercion, udf,
 };
+pub use aggregates::{AggregateStream, create_schema};
 
 #[cfg(test)]
 mod tests {

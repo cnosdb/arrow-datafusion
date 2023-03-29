@@ -36,7 +36,7 @@ use crate::execution::memory_pool::{MemoryConsumer, MemoryReservation};
 use futures::stream::{Stream, StreamExt};
 
 /// stream struct for aggregation without grouping columns
-pub(crate) struct AggregateStream {
+pub struct AggregateStream {
     stream: BoxStream<'static, Result<RecordBatch>>,
     schema: SchemaRef,
 }
@@ -196,6 +196,10 @@ fn aggregate_batch(
             let res = match mode {
                 AggregateMode::Partial => accum.update_batch(values),
                 AggregateMode::Final | AggregateMode::FinalPartitioned => {
+                    accum.merge_batch(values)
+                }
+                AggregateMode::PartialMerge => {
+                    // TODO
                     accum.merge_batch(values)
                 }
             };

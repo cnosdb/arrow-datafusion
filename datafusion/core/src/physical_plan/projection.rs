@@ -271,22 +271,37 @@ impl ExecutionPlan for ProjectionExec {
     }
 }
 
+fn get_expr_metadata(
+    e: &Arc<dyn PhysicalExpr>,
+    input_schema: &Schema,
+) -> HashMap<String, String> {
+    let mut metadata = HashMap::new();
+
+    for ref child in e.children() {
+        metadata.extend(get_expr_metadata(child, input_schema));
+    }
+
+    if let Some(column) = e.as_any().downcast_ref::<Column>() {
+        let _ = input_schema
+            .field_with_name(column.name())
+            .map(|f| metadata.extend(f.metadata().clone()));
+    }
+
+    metadata
+}
+
 /// If e is a direct column reference, returns the field level
 /// metadata for that field, if any. Otherwise returns None
-fn get_field_metadata(
+pub fn get_field_metadata(
     e: &Arc<dyn PhysicalExpr>,
     input_schema: &Schema,
 ) -> Option<HashMap<String, String>> {
-    let name = if let Some(column) = e.as_any().downcast_ref::<Column>() {
-        column.name()
+    let metadata = get_expr_metadata(e, input_schema);
+    if metadata.is_empty() {
+        None
     } else {
-        return None;
-    };
-
-    input_schema
-        .field_with_name(name)
-        .ok()
-        .map(|f| f.metadata().clone())
+        Some(metadata)
+    }
 }
 
 fn stats_projection(
