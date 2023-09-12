@@ -305,7 +305,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
     /// Returns the `Expr`'s corresponding to a SQL query's SELECT expressions.
     ///
     /// Wildcards are expanded into the concrete list of columns.
-    fn prepare_select_exprs(
+    pub fn prepare_select_exprs(
         &self,
         plan: &LogicalPlan,
         projection: Vec<SelectItem>,
