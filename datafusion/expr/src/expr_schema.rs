@@ -21,6 +21,7 @@ use crate::expr::{
     InSubquery, Placeholder, ScalarFunction, ScalarUDF, Sort, TryCast, WindowFunction,
 };
 use crate::field_util::get_indexed_field;
+use crate::type_coercion::aggregates::check_arg_count;
 use crate::type_coercion::binary::get_result_type;
 use crate::type_coercion::functions;
 use crate::{aggregate_function, window_function, LogicalPlan, Projection, Subquery};
@@ -117,6 +118,11 @@ impl ExprSchemable for Expr {
                     .iter()
                     .map(|e| e.get_type(schema))
                     .collect::<Result<Vec<_>>>()?;
+                check_arg_count(
+                    &fun.name,
+                    &input_expr_types,
+                    &fun.signature.type_signature,
+                )?;
                 // verify that this is a valid set of data types for this function
                 functions::data_types(&input_expr_types, &fun.signature).map_err(
                     |_| {
