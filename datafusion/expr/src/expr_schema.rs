@@ -80,12 +80,6 @@ impl ExprSchemable for Expr {
                     .iter()
                     .map(|e| e.get_type(schema))
                     .collect::<Result<Vec<_>>>()?;
-                check_arg_count(
-                    &fun.name,
-                    &input_expr_types,
-                    &fun.signature.type_signature,
-                    false,
-                )?;
                 // verify that this is a valid set of data types for this function
                 functions::data_types(&input_expr_types, &fun.signature).map_err(
                     |_| {
@@ -128,7 +122,6 @@ impl ExprSchemable for Expr {
                     &fun.name,
                     &input_expr_types,
                     &fun.signature.type_signature,
-                    true,
                 )?;
                 // verify that this is a valid set of data types for this function
                 functions::data_types(&input_expr_types, &fun.signature).map_err(
