@@ -89,7 +89,7 @@ pub fn coerce_types(
     signature: &Signature,
 ) -> Result<Vec<DataType>> {
     // Validate input_types matches (at least one of) the func signature.
-    check_arg_count(&agg_fun.to_string(), input_types, &signature.type_signature)?;
+    check_arg_count(agg_fun, input_types, &signature.type_signature)?;
 
     match agg_fun {
         AggregateFunction::Count | AggregateFunction::ApproxDistinct => {
@@ -276,8 +276,8 @@ pub fn coerce_types(
 /// This method DOES NOT validate the argument types - only that (at least one,
 /// in the case of [`TypeSignature::OneOf`]) signature matches the desired
 /// number of input types.
-pub fn check_arg_count(
-    agg_fun: &str,
+fn check_arg_count(
+    agg_fun: &AggregateFunction,
     input_types: &[DataType],
     signature: &TypeSignature,
 ) -> Result<()> {
