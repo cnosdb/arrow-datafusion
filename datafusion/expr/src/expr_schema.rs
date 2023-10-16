@@ -79,6 +79,11 @@ impl ExprSchemable for Expr {
                     .iter()
                     .map(|e| e.get_type(schema))
                     .collect::<Result<Vec<_>>>()?;
+                crate::udf::check_scalar_arg_count(
+                    fun.name.as_str(),
+                    &input_expr_types,
+                    &fun.signature.type_signature,
+                )?;
                 // verify that this is a valid set of data types for this function
                 functions::data_types(&input_expr_types, &fun.signature).map_err(
                     |_| {
@@ -117,6 +122,11 @@ impl ExprSchemable for Expr {
                     .iter()
                     .map(|e| e.get_type(schema))
                     .collect::<Result<Vec<_>>>()?;
+                crate::udaf::check_agg_arg_count(
+                    &fun.name,
+                    &input_expr_types,
+                    &fun.signature.type_signature,
+                )?;
                 // verify that this is a valid set of data types for this function
                 functions::data_types(&input_expr_types, &fun.signature).map_err(
                     |_| {

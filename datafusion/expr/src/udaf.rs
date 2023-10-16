@@ -138,3 +138,59 @@ impl AggregateUDF {
         })
     }
 }
+
+pub fn check_agg_arg_count(
+    agg_fun: &str,
+    input_types: &[arrow::datatypes::DataType],
+    signature: &crate::TypeSignature,
+) -> Result<(), datafusion_common::DataFusionError> {
+    use crate::TypeSignature;
+    use datafusion_common::DataFusionError;
+    match signature {
+        TypeSignature::Uniform(agg_count, _) | TypeSignature::Any(agg_count) => {
+            if input_types.len() != *agg_count {
+                return Err(DataFusionError::Plan(format!(
+                    "The function {:?} expects {:?} arguments, but {:?} were provided",
+                    agg_fun,
+                    agg_count,
+                    input_types.len()
+                )));
+            }
+        }
+        TypeSignature::Exact(types) => {
+            if types.len() != input_types.len() {
+                return Err(DataFusionError::Plan(format!(
+                    "The function {:?} expects {:?} arguments, but {:?} were provided",
+                    agg_fun,
+                    types.len(),
+                    input_types.len()
+                )));
+            }
+        }
+        TypeSignature::OneOf(variants) => {
+            let ok = variants
+                .iter()
+                .any(|v| check_agg_arg_count(agg_fun, input_types, v).is_ok());
+            if !ok {
+                return Err(DataFusionError::Plan(format!(
+                    "The function {:?} does not accept {:?} function arguments.",
+                    agg_fun,
+                    input_types.len()
+                )));
+            }
+        }
+        TypeSignature::VariadicAny => {
+            if input_types.is_empty() {
+                return Err(DataFusionError::Plan(format!(
+                    "The function {agg_fun:?} expects at least one argument"
+                )));
+            }
+        }
+        _ => {
+            return Err(DataFusionError::Internal(format!(
+                "Aggregate functions do not support this {signature:?}"
+            )));
+        }
+    }
+    Ok(())
+}
