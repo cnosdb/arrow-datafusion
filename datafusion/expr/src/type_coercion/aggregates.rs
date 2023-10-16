@@ -89,7 +89,12 @@ pub fn coerce_types(
     signature: &Signature,
 ) -> Result<Vec<DataType>> {
     // Validate input_types matches (at least one of) the func signature.
-    check_arg_count(&agg_fun.to_string(), input_types, &signature.type_signature)?;
+    check_arg_count(
+        &agg_fun.to_string(),
+        input_types,
+        &signature.type_signature,
+        true,
+    )?;
 
     match agg_fun {
         AggregateFunction::Count | AggregateFunction::ApproxDistinct => {
@@ -271,7 +276,7 @@ pub fn coerce_types(
     }
 }
 
-/// Validate the length of `input_types` matches the `signature` for `agg_fun`.
+/// Validate the length of `input_types` matches the `signature` for `func`.
 ///
 /// This method DOES NOT validate the argument types - only that (at least one,
 /// in the case of [`TypeSignature::OneOf`]) signature matches the desired
@@ -280,6 +285,7 @@ pub fn check_arg_count(
     agg_fun: &str,
     input_types: &[DataType],
     signature: &TypeSignature,
+    is_aggregate: bool,
 ) -> Result<()> {
     match signature {
         TypeSignature::Uniform(agg_count, _) | TypeSignature::Any(agg_count) => {
@@ -305,7 +311,7 @@ pub fn check_arg_count(
         TypeSignature::OneOf(variants) => {
             let ok = variants
                 .iter()
-                .any(|v| check_arg_count(agg_fun, input_types, v).is_ok());
+                .any(|v| check_arg_count(agg_fun, input_types, v, is_aggregate).is_ok());
             if !ok {
                 return Err(DataFusionError::Plan(format!(
                     "The function {:?} does not accept {:?} function arguments.",
@@ -322,8 +328,9 @@ pub fn check_arg_count(
             }
         }
         _ => {
+            let func_type = if is_aggregate { "Aggregate" } else { "Scalar" };
             return Err(DataFusionError::Internal(format!(
-                "Aggregate functions do not support this {signature:?}"
+                "{func_type} functions do not support this {signature:?}"
             )));
         }
     }
