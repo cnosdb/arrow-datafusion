@@ -127,7 +127,7 @@ impl OptimizerRule for PushDownLimit {
                         projected_schema: scan.projected_schema.clone(),
                         agg_with_grouping: scan.agg_with_grouping.clone(),
                     });
-                    Some(plan.with_new_inputs(&[new_input])?)
+                    Some(new_input)
                 }
             }
             LogicalPlan::Union(union) => {
