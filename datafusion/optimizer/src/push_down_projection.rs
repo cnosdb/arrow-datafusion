@@ -264,7 +264,13 @@ impl OptimizerRule for PushDownProjection {
                         fun, args, ..
                     }) = &agg.aggr_expr[0]
                     {
-                        if matches!(fun, datafusion_expr::AggregateFunction::Count)
+                        if matches!(fun, datafusion_expr::AggregateFunction::Sum) && args.len() == 1 {
+                            if let Expr::Column(Column { relation, name }) = &args[0] {
+                                if relation.is_none() && name == "COUNT(UInt8(1))" {
+                                    new_aggr_expr.push(agg.aggr_expr[0].clone());
+                                }
+                            }
+                        } else if matches!(fun, datafusion_expr::AggregateFunction::Count)
                             && args.len() == 1
                             && args[0] == Expr::Literal(UInt8(Some(1)))
                         {
