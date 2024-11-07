@@ -143,7 +143,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                         Ok(n as usize)
                     }
                     _ => Err(DataFusionError::Plan(
-                        "LIMIT must not be negative".to_string(),
+                        "LIMIT format is invalid".to_string(),
                     )),
                 }?;
                 Some(n)
