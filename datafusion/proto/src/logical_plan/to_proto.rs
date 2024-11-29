@@ -632,6 +632,7 @@ impl TryFrom<&Expr> for protobuf::LogicalExprNode {
                 ref distinct,
                 ref filter,
                 ref order_by,
+                ..
             }) => {
                 let aggr_function = match fun {
                     AggregateFunction::ApproxDistinct => {

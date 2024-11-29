@@ -1650,6 +1650,7 @@ pub fn create_aggregate_expr_with_name_and_maybe_filter(
             args,
             filter,
             order_by,
+            ..
         }) => {
             let args = args
                 .iter()

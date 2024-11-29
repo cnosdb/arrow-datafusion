@@ -365,7 +365,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
         // next, aggregate built-ins
         let fun = AggregateFunction::ArrayAgg;
         Ok(Expr::AggregateFunction(expr::AggregateFunction::new(
-            fun, args, distinct, None, order_by,
+            fun, args, distinct, None, order_by, false,
         )))
     }
 
@@ -500,6 +500,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                 args,
                 distinct,
                 order_by,
+                can_be_pushed_down,
                 ..
             }) => Ok(Expr::AggregateFunction(expr::AggregateFunction::new(
                 fun,
@@ -511,6 +512,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                     planner_context,
                 )?)),
                 order_by,
+                can_be_pushed_down,
             ))),
             _ => Err(DataFusionError::Plan(
                 "AggregateExpressionWithFilter expression was not an AggregateFunction"

@@ -2570,6 +2570,7 @@ mod roundtrip_tests {
             false,
             None,
             None,
+            false,
         ));
         let ctx = SessionContext::new();
         roundtrip_expr_test(test_expr, ctx);
@@ -2583,6 +2584,7 @@ mod roundtrip_tests {
             true,
             None,
             None,
+            false,
         ));
         let ctx = SessionContext::new();
         roundtrip_expr_test(test_expr, ctx);
@@ -2596,6 +2598,7 @@ mod roundtrip_tests {
             false,
             None,
             None,
+            false,
         ));
 
         let ctx = SessionContext::new();

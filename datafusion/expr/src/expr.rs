@@ -425,6 +425,8 @@ pub struct AggregateFunction {
     pub filter: Option<Box<Expr>>,
     /// Optional ordering
     pub order_by: Option<Vec<Expr>>,
+    /// Whether it can be pushed down
+    pub can_be_pushed_down: bool,
 }
 
 impl AggregateFunction {
@@ -434,6 +436,7 @@ impl AggregateFunction {
         distinct: bool,
         filter: Option<Box<Expr>>,
         order_by: Option<Vec<Expr>>,
+        can_be_pushed_down: bool,
     ) -> Self {
         Self {
             fun,
@@ -441,6 +444,7 @@ impl AggregateFunction {
             distinct,
             filter,
             order_by,
+            can_be_pushed_down,
         }
     }
 }
@@ -1364,6 +1368,7 @@ fn create_name(e: &Expr) -> Result<String> {
             args,
             filter,
             order_by,
+            ..
         }) => {
             let mut name = create_function_name(&fun.to_string(), *distinct, args)?;
             if let Some(fe) = filter {

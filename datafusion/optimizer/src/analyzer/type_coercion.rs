@@ -409,6 +409,7 @@ impl TreeNodeRewriter for TypeCoercionRewriter {
                 distinct,
                 filter,
                 order_by,
+                can_be_pushed_down,
             }) => {
                 let new_expr = coerce_agg_exprs_for_signature(
                     &fun,
@@ -417,7 +418,7 @@ impl TreeNodeRewriter for TypeCoercionRewriter {
                     &aggregate_function::signature(&fun),
                 )?;
                 let expr = Expr::AggregateFunction(expr::AggregateFunction::new(
-                    fun, new_expr, distinct, filter, order_by,
+                    fun, new_expr, distinct, filter, order_by, can_be_pushed_down,
                 ));
                 Ok(expr)
             }
@@ -993,6 +994,7 @@ mod test {
             false,
             None,
             None,
+            false,
         ));
         let plan = LogicalPlan::Projection(Projection::try_new(vec![agg_expr], empty)?);
         let expected = "Projection: AVG(Int64(12))\n  EmptyRelation";
@@ -1006,6 +1008,7 @@ mod test {
             false,
             None,
             None,
+            false,
         ));
         let plan = LogicalPlan::Projection(Projection::try_new(vec![agg_expr], empty)?);
         let expected = "Projection: AVG(a)\n  EmptyRelation";
@@ -1023,6 +1026,7 @@ mod test {
             false,
             None,
             None,
+            false,
         ));
         let err = Projection::try_new(vec![agg_expr], empty).err().unwrap();
         assert_eq!(

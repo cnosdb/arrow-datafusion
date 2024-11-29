@@ -472,7 +472,7 @@ pub fn to_substrait_agg_measure(
     ),
 ) -> Result<Measure> {
     match expr {
-        Expr::AggregateFunction(expr::AggregateFunction { fun, args, distinct, filter, order_by }) => {
+        Expr::AggregateFunction(expr::AggregateFunction { fun, args, distinct, filter, order_by, .. }) => {
             let sorts = if let Some(order_by) = order_by {
                 order_by.iter().map(|expr| to_substrait_sort_field(expr, schema, extension_info)).collect::<Result<Vec<_>>>()?
             } else {

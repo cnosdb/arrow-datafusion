@@ -132,6 +132,7 @@ impl OptimizerRule for SingleDistinctToGroupBy {
                                 args,
                                 filter,
                                 order_by,
+                                can_be_pushed_down,
                                 ..
                             }) => {
                                 // is_single_distinct_agg ensure args.len=1
@@ -146,6 +147,7 @@ impl OptimizerRule for SingleDistinctToGroupBy {
                                     false, // intentional to remove distinct here
                                     filter.clone(),
                                     order_by.clone(),
+                                    can_be_pushed_down.clone(),
                                 )))
                             }
                             _ => Ok(aggr_expr.clone()),
@@ -402,6 +404,7 @@ mod tests {
                         true,
                         None,
                         None,
+                        false,
                     )),
                 ],
             )?

@@ -176,6 +176,7 @@ impl TreeNodeRewriter for CountWildcardRewriter {
                 distinct,
                 filter,
                 order_by,
+                can_be_pushed_down,
             }) if args.len() == 1 => match args[0] {
                 Expr::Wildcard => Expr::AggregateFunction(AggregateFunction {
                     fun: aggregate_function::AggregateFunction::Count,
@@ -183,6 +184,7 @@ impl TreeNodeRewriter for CountWildcardRewriter {
                     distinct,
                     filter,
                     order_by,
+                    can_be_pushed_down,
                 }),
                 _ => old_expr,
             },

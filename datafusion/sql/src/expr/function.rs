@@ -135,7 +135,7 @@ impl<'a, S: ContextProvider> SqlToRel<'a, S> {
                     self.function_args_to_expr(function.args, schema, planner_context)?;
 
                 return Ok(Expr::AggregateFunction(expr::AggregateFunction::new(
-                    fun, args, distinct, None, order_by,
+                    fun, args, distinct, None, order_by, true,
                 )));
             };
 

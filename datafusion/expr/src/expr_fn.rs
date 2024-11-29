@@ -111,6 +111,7 @@ pub fn min(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -122,6 +123,7 @@ pub fn max(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -133,6 +135,7 @@ pub fn sum(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -144,6 +147,7 @@ pub fn avg(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -155,6 +159,7 @@ pub fn count(expr: Expr) -> Expr {
         false,
         None,
         None,
+        true,
     ))
 }
 
@@ -211,6 +216,7 @@ pub fn count_distinct(expr: Expr) -> Expr {
         true,
         None,
         None,
+        false,
     ))
 }
 
@@ -263,6 +269,7 @@ pub fn approx_distinct(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -274,6 +281,7 @@ pub fn median(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -285,6 +293,7 @@ pub fn approx_median(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -296,6 +305,7 @@ pub fn approx_percentile_cont(expr: Expr, percentile: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -311,6 +321,7 @@ pub fn approx_percentile_cont_with_weight(
         false,
         None,
         None,
+        false,
     ))
 }
 
@@ -381,6 +392,7 @@ pub fn stddev(expr: Expr) -> Expr {
         false,
         None,
         None,
+        false,
     ))
 }
 

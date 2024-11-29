@@ -1011,6 +1011,7 @@ pub fn parse_expr(
                 expr.distinct,
                 parse_optional_expr(expr.filter.as_deref(), registry)?.map(Box::new),
                 parse_vec_expr(&expr.order_by, registry)?,
+                false,
             )))
         }
         ExprType::Alias(alias) => Ok(Expr::Alias(

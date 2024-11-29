@@ -299,12 +299,14 @@ impl TreeNode for Expr {
                 distinct,
                 filter,
                 order_by,
+                can_be_pushed_down,
             }) => Expr::AggregateFunction(AggregateFunction::new(
                 fun,
                 transform_vec(args, &mut transform)?,
                 distinct,
                 transform_option_box(filter, &mut transform)?,
                 transform_option_vec(order_by, &mut transform)?,
+                can_be_pushed_down,
             )),
             Expr::GroupingSet(grouping_set) => match grouping_set {
                 GroupingSet::Rollup(exprs) => Expr::GroupingSet(GroupingSet::Rollup(

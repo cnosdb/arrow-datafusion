@@ -665,6 +665,7 @@ pub async fn from_substrait_agg_func(
         distinct,
         filter,
         order_by,
+        can_be_pushed_down: false,
     })))
 }
 

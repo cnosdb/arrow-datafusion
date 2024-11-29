@@ -167,6 +167,7 @@ where
                 distinct,
                 filter,
                 order_by,
+                can_be_pushed_down,
             }) => Ok(Expr::AggregateFunction(AggregateFunction::new(
                 fun.clone(),
                 args.iter()
@@ -175,6 +176,7 @@ where
                 *distinct,
                 filter.clone(),
                 order_by.clone(),
+                can_be_pushed_down.clone(),
             ))),
             Expr::WindowFunction(WindowFunction {
                 fun,

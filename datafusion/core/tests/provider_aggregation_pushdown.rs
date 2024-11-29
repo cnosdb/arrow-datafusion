@@ -249,6 +249,7 @@ impl TableProvider for CustomAggregationProvider {
                     distinct,
                     filter,
                     order_by,
+                    can_be_pushed_down,
                 }) => {
                     let support_agg_func = match fun {
                         aggregate_function::AggregateFunction::Count => true,
@@ -263,6 +264,7 @@ impl TableProvider for CustomAggregationProvider {
                         && !distinct
                         && filter.is_none()
                         && order_by.is_none()
+                        && *can_be_pushed_down
                 }
                 _ => false,
             }
